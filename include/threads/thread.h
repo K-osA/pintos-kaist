@@ -94,7 +94,7 @@ struct thread {
 
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
-
+	int64_t wakeup_tick;				/* tick이 이 값보다 커지면 깨어나야 한다. */
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */
@@ -132,6 +132,10 @@ const char *thread_name (void);
 
 void thread_exit (void) NO_RETURN;
 void thread_yield (void);
+
+void thread_sleep (int64_t ticks);
+void thread_awake (int64_t ticks);
+
 
 int thread_get_priority (void);
 void thread_set_priority (int);
