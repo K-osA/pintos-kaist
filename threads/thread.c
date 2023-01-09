@@ -355,6 +355,14 @@ thread_awake (int64_t ticks) {
 void
 thread_set_priority (int new_priority) {
 	thread_current ()->priority = new_priority;
+	thread_current ()->origin_priority = new_priority;
+
+	if (!list_empty (&thread_current ()->donations)) {
+		list_sort (&thread_current ()->donations, cmp_priority_donation, NULL);
+		struct thread *t = list_entry (list_front (&thread_current ()->donations), struct thread, d_elem);
+		if (t->priority > thread_current ()->priority)
+			thread_current ()->priority = t->priority;
+	}
 	if (!list_empty (&ready_list) && list_entry (list_front (&ready_list), struct thread, elem)->priority > new_priority) {
 		thread_yield ();
 	}
@@ -454,6 +462,9 @@ init_thread (struct thread *t, const char *name, int priority) {
 	strlcpy (t->name, name, sizeof t->name);
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
 	t->priority = priority;
+	t->origin_priority = priority;
+	t->wait_on_lock = NULL;
+	list_init (&t->donations);
 	t->magic = THREAD_MAGIC;
 }
 
