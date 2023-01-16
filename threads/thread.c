@@ -210,7 +210,7 @@ thread_create (const char *name, int priority,
 
 	/* Add to run queue. */
 	thread_unblock (t);
-	if (priority > thread_current () -> priority) {
+	if (priority > thread_current () -> priority && !intr_context ()) {
 		thread_yield ();
 	}
 
@@ -363,7 +363,7 @@ thread_set_priority (int new_priority) {
 		if (t->priority > thread_current ()->priority)
 			thread_current ()->priority = t->priority;
 	}
-	if (!list_empty (&ready_list) && list_entry (list_front (&ready_list), struct thread, elem)->priority > new_priority) {
+	if (!list_empty (&ready_list) && list_entry (list_front (&ready_list), struct thread, elem)->priority > new_priority && !intr_context ()) {
 		thread_yield ();
 	}
 }
